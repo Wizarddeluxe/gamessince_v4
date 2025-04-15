@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>⚾ Games Since ⚾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: white;
+            color: black;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            margin-top: 40px;
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%%;
+            max-width: 1000px;
+            margin: 20px auto;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #f0f0f0;
+        }
+        .dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .dark-mode table, .dark-mode th, .dark-mode td {
+            border-color: #444;
+        }
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            background-color: #222;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleMode()">🌗 Toggle Dark Mode</button>
+
+    <h1>📈 2025 Season Leaderboard</h1>
+    <table id="leaderboard">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">🏃‍♂️ Player</th>
+                <th onclick="sortTable(1)">💣 HRs</th>
+                <th onclick="sortTable(2)">🧢 Hits</th>
+                <th onclick="sortTable(3)">🥩 RBIs</th>
+                <th onclick="sortTable(4)">🚶 Walks</th>
+                <th onclick="sortTable(5)">📆 Games Since Last HR</th>
+                <th onclick="sortTable(6)">🎯 ABs Since Last HR</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in leaderboard %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.homeRuns }}</td>
+                <td>{{ p.hits }}</td>
+                <td>{{ p.rbi }}</td>
+                <td>{{ p.baseOnBalls }}</td>
+                <td>{{ p.games_since_hr if 'games_since_hr' in p else '–' }}</td>
+                <td>{{ p.abs_since_hr if 'abs_since_hr' in p else '–' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function sortTable(n) {
+            const table = document.getElementById("leaderboard");
+            let switching = true, dir = "desc", switchcount = 0;
+            while (switching) {
+                switching = false;
+                let rows = table.rows;
+                for (let i = 1; i < (rows.length - 1); i++) {
+                    let shouldSwitch = false;
+                    let x = rows[i].getElementsByTagName("TD")[n];
+                    let y = rows[i + 1].getElementsByTagName("TD")[n];
+                    let xVal = isNaN(x.innerHTML) ? x.innerHTML.toLowerCase() : parseFloat(x.innerHTML);
+                    let yVal = isNaN(y.innerHTML) ? y.innerHTML.toLowerCase() : parseFloat(y.innerHTML);
+                    if ((dir == "asc" && xVal > yVal) || (dir == "desc" && xVal < yVal)) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "desc") {
+                        dir = "asc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        function toggleMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+    </script>
+</body>
+</html>
