@@ -9,6 +9,8 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     players = get_season_home_run_hitters()
+    print(f"[CHECK] Loaded {len(players)} players from cache")
+
     for p in players:
         try:
             print(f"[LOG] Getting HR stats for {p['name']}")
@@ -21,8 +23,8 @@ def index():
             p["abs_since_hr"] = "-"
 
     leaderboard = get_leaderboard()
+    print(f"[CHECK] Loaded {len(leaderboard)} players from get_leaderboard")
 
-    # Include HR stats for leaderboard players if possible
     for player in leaderboard:
         match = next((p for p in players if p["id"] == player["id"]), None)
         if match:
@@ -31,6 +33,8 @@ def index():
         else:
             player["games_since_hr"] = "-"
             player["abs_since_hr"] = "-"
+
+    print(f"[RESULT] Passing {len(leaderboard)} players to the template")
 
     return render_template("index.html", players=players, leaderboard=leaderboard)
 
