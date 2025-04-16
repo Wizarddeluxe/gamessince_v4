@@ -11,14 +11,27 @@ def index():
     players = get_season_home_run_hitters()
     for p in players:
         try:
+            print(f"[LOG] Getting HR stats for {p['name']}")
             streak_games, streak_abs = get_hr_stats(p["id"])
             p["games_since_hr"] = streak_games
             p["abs_since_hr"] = streak_abs
         except Exception as e:
-            print(f"⚠️ Error fetching stats for {p['name']}: {e}")
+            print(f"⚠️ Failed to fetch stats for {p['name']}: {e}")
             p["games_since_hr"] = "-"
             p["abs_since_hr"] = "-"
+
     leaderboard = get_leaderboard()
+
+    # Include HR stats for leaderboard players if possible
+    for player in leaderboard:
+        match = next((p for p in players if p["id"] == player["id"]), None)
+        if match:
+            player["games_since_hr"] = match.get("games_since_hr", "-")
+            player["abs_since_hr"] = match.get("abs_since_hr", "-")
+        else:
+            player["games_since_hr"] = "-"
+            player["abs_since_hr"] = "-"
+
     return render_template("index.html", players=players, leaderboard=leaderboard)
 
 @app.route("/debug/hr")
@@ -43,6 +56,7 @@ def debug_home_runs():
         "total_home_runs": len(home_run_names),
         "players": home_run_names
     }
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

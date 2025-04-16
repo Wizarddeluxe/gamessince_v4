@@ -14,16 +14,31 @@ def get_season_home_run_hitters():
 def get_hr_stats(player_id):
     season = datetime.now().year
     url = f"https://statsapi.mlb.com/api/v1/people/{player_id}/stats?stats=gameLog&season={season}"
-    logs = requests.get(url).json()
-    games = logs["stats"][0]["splits"]
+    try:
+        logs = requests.get(url).json()
+        games = logs["stats"][0]["splits"]
+    except Exception as e:
+        print(f"[ERROR] Failed to get game logs for player {player_id}: {e}")
+        return "-", "-"
+
     game_streak = 0
     ab_streak = 0
 
     for game in reversed(games[:-1]):
-        ab_streak += int(game["stat"].get("atBats", 0))
+        try:
+            at_bats = int(game["stat"].get("atBats", 0))
+        except (ValueError, TypeError):
+            print(f"[WARN] Invalid atBats for player {player_id} on game {game.get('date', '?')}")
+            at_bats = 0
+
+        ab_streak += at_bats
         game_streak += 1
-        if game["stat"]["homeRuns"] != "0":
-            break
+
+        try:
+            if int(game["stat"]["homeRuns"]) > 0:
+                break
+        except:
+            continue
 
     return game_streak, ab_streak
 
